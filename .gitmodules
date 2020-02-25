@@ -1,0 +1,3 @@
+[submodule "sino.study-data"]
+	path = sino.study-data
+	url = ../sino.study-data
