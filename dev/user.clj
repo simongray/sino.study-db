@@ -1,39 +1,45 @@
 (ns user
-  (:require [datascript.core :as ds]
-            [clojure.java.io :as io]
+  (:require [clojure.java.io :as io]
+            [datascript.core :as d]
             [sino.study.db.core :as db]
-            [sino.study.db.load.cedict :as cedict]))
+            [sino.study.db.io.common :as io.common]
+            [sino.study.db.io.cedict :as io.cedict]))
 
 (println "started dev environment for sino.study-db")
 
-(comment
+(def conn
+  (d/create-conn db/schema))
+
+(defn conn-from-db!
+  []
   (def conn
-    (ds/create-conn db/schema))
+    (d/conn-from-db (io.common/read-db "db.edn"))))
 
-  (cedict/read-file! conn (io/resource "cedict_ts.u8"))
+(comment
+  (io.cedict/read-file! conn (io/resource "cedict_ts.u8"))
 
-  (ds/q '[:find [?t ...]
-          :where
-          [?t :term/pinyin "san1"]
-          [?t :term/script :simplified]]
-        @conn)
+  (d/q '[:find [?t ...]
+         :where
+         [?t :term/pinyin "san1"]
+         [?t :term/script :simplified]]
+       @conn)
 
-  (count (ds/q '[:find ?t
-                 :where
-                 [?t :term/script :simplified]]
-               @conn))
+  (count (d/q '[:find ?t
+                :where
+                [?t :term/script :simplified]]
+              @conn))
 
-  (ds/pull-many
+  (d/pull-many
     @conn
     [:term/hanzi
      :term/script
      :term/definition]
-    (ds/q '[:find [?t ...]
-            :where
-            [?t :term/definition "to"]
-            [?t :term/script :simplified]]
-          @conn))
+    (d/q '[:find [?t ...]
+           :where
+           [?t :term/definition "to"]
+           [?t :term/script :simplified]]
+         @conn))
 
-  (ds/pull @conn [:term/hanzi
-                  :term/script
-                  :term/definition] 66))
+  (d/pull @conn [:term/hanzi
+                 :term/script
+                 :term/definition] 66))

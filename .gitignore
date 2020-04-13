@@ -135,3 +135,6 @@ hs_err_pid*
 
 .idea
 *.iml
+
+# Ignoring database snapshots
+db.edn

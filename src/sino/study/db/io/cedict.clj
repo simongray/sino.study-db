@@ -1,5 +1,5 @@
-(ns sino.study.db.load.cedict
-  (:require [datascript.core :as ds]
+(ns sino.study.db.io.cedict
+  (:require [datascript.core :as d]
             [clojure.java.io :as io]
             [clojure.string :as str]))
 
@@ -24,4 +24,4 @@
   (with-open [reader (io/reader file)]
     (doseq [line (line-seq reader)]
       (when-not (str/starts-with? line "#")
-        (ds/transact! conn (line->term line))))))
+        (d/transact! conn (line->term line))))))
