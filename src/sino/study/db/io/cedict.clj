@@ -3,20 +3,26 @@
             [clojure.java.io :as io]
             [clojure.string :as str]))
 
-(defn- line->term
+(defn- line->datalog
   "Extract the constituents of a `line` in a CC-CEDICT dictionary file."
   [line]
   (let [pattern     #"^([^ ]+) ([^ ]+) \[([^]]+)\] /(.+)/"
-        [_ trad simp pinyin defs] (re-matches pattern line)
-        definitions (str/split defs #"\/")]
-    [{:term/hanzi      trad
-      :term/script     :traditional
-      :term/pinyin     pinyin
-      :term/definition definitions}
-     {:term/hanzi      simp
-      :term/script     :simplified
-      :term/pinyin     pinyin
-      :term/definition definitions}]))
+        [_ traditional simplified pinyin+digits defs] (re-matches pattern line)
+        definitions (str/split defs #"\/")
+        syllables   (str/split pinyin+digits #"\s")
+        pinyin      (-> pinyin+digits
+                        (str/replace #"\s|\d" "")
+                        (str/lower-case))]
+    [{:chinese/term       traditional
+      :chinese/script     :traditional
+      :chinese/syllables  syllables
+      :chinese/pinyin     pinyin
+      :english/definition definitions}
+     {:chinese/term       simplified
+      :chinese/script     :simplified
+      :chinese/syllables  syllables
+      :chinese/pinyin     pinyin
+      :english/definition definitions}]))
 
 (defn read-file!
   "Add the listings of a CC-CEDICT dictionary `file` to a db `conn`."
@@ -24,4 +30,4 @@
   (with-open [reader (io/reader file)]
     (doseq [line (line-seq reader)]
       (when-not (str/starts-with? line "#")
-        (d/transact! conn (line->term line))))))
+        (d/transact! conn (line->datalog line))))))
